@@ -43,8 +43,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 int tp_buttons;
 
-#if defined(RETRO_TAPPING) || defined(RETRO_TAPPING_PER_KEY)
-int retro_tapping_counter = 0;
+#ifdef RETRO_TAPPING
+int retro_tapping_interrupted = 0;
 #endif
 
 #ifdef IGNORE_MOD_TAP_INTERRUPT_PER_KEY
@@ -68,12 +68,7 @@ __attribute__((weak)) bool get_retro_tapping(uint16_t keycode, keyrecord_t *reco
 void action_exec(keyevent_t event) {
     if (!IS_NOEVENT(event)) {
         dprint("\n---- action_exec: start -----\n");
-        dprint("EVENT: ");
-        debug_event(event);
-        dprintln();
-#if defined(RETRO_TAPPING) || defined(RETRO_TAPPING_PER_KEY)
-        retro_tapping_counter++;
-#endif
+        dprint("EVENT: "); debug_event(event); dprintln();
     }
 
     if (event.pressed) {
@@ -681,38 +676,17 @@ void process_action(keyrecord_t *record, action_t action) {
 #endif
 
 #ifndef NO_ACTION_TAPPING
-#    if defined(RETRO_TAPPING) || defined(RETRO_TAPPING_PER_KEY)
-    if (!is_tap_action(action)) {
-        retro_tapping_counter = 0;
-    } else {
-        if (event.pressed) {
-            if (tap_count > 0) {
-                retro_tapping_counter = 0;
-            }
-        } else {
-            if (tap_count > 0) {
-                retro_tapping_counter = 0;
-            } else {
-                if (
-#        ifdef RETRO_TAPPING_PER_KEY
-                    get_retro_tapping(get_event_keycode(record->event, false), record) &&
-#        endif
-                    retro_tapping_counter == 2) {
-                    tap_code(action.layer_tap.code);
-                }
-                retro_tapping_counter = 0;
-            }
-        }
+  #ifdef RETRO_TAPPING
+  if (is_tap_action(action)) {
+    if (!event.pressed && !retro_tapping_interrupted) {
+      register_code(action.layer_tap.code);
+      unregister_code(action.layer_tap.code);
     }
-#    endif
-#endif
-
-#ifdef SWAP_HANDS_ENABLE
-#    ifndef NO_ACTION_ONESHOT
-    if (event.pressed && !(action.kind.id == ACT_SWAP_HANDS && action.swap.code == OP_SH_ONESHOT)) {
-        use_oneshot_swaphands();
-    }
-#    endif
+    retro_tapping_interrupted = 0;
+  } else if (event.pressed) {
+    retro_tapping_interrupted = 1;
+  }
+  #endif
 #endif
 
 #ifndef NO_ACTION_ONESHOT
