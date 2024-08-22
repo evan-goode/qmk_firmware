@@ -20,10 +20,9 @@
 
 bool mouse_moved = false;
 
-void process_mouse_user(report_mouse_t* mouse_report, int16_t x, int16_t y) {
-    mouse_report->x = x;
-    mouse_report->y = y;
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     mouse_moved = true;
+    return mouse_report;
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {

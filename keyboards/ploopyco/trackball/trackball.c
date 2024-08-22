@@ -84,6 +84,7 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
 }
 
 void process_wheel(void) {
+    return;
     // TODO: Replace this with interrupt driven code,  polling is S L O W
     // Lovingly ripped from the Ploopy Source
 
