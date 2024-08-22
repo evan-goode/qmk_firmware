@@ -18,10 +18,26 @@
 #include QMK_KEYBOARD_H
 #include "pointing_device.h"
 
-bool mouse_moved = false;
+static bool mouse_moved = false;
 
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     mouse_moved = true;
+
+    static int16_t scroll_buffer_h = 0;
+    static int16_t scroll_buffer_v = 0;
+    static uint32_t last_scroll_time = 0;
+    scroll_buffer_h += mouse_report.h;
+    scroll_buffer_v += mouse_report.v;
+    mouse_report.h = 0;
+    mouse_report.v = 0;
+    if (timer_elapsed32(last_scroll_time) < 16) {
+        return mouse_report;
+    }
+    last_scroll_time = timer_read32();
+    mouse_report.h = scroll_buffer_h;
+    mouse_report.v = scroll_buffer_v;
+    scroll_buffer_h = 0;
+    scroll_buffer_v = 0;
     return mouse_report;
 }
 

@@ -203,8 +203,8 @@ typedef struct {
 #endif
     mouse_xy_report_t x;
     mouse_xy_report_t y;
-    int8_t            v;
-    int8_t            h;
+    int16_t           v;
+    int16_t           h;
 } PACKED report_mouse_t;
 
 typedef struct {
