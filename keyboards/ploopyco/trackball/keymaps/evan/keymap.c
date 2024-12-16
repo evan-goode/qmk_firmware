@@ -21,8 +21,9 @@
 static bool mouse_moved = false;
 
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    mouse_moved = true;
-
+    if (mouse_report.h != 0 || mouse_report.v != 0) {
+        mouse_moved = true;
+    }
     static int16_t scroll_buffer_h = 0;
     static int16_t scroll_buffer_v = 0;
     static uint32_t last_scroll_time = 0;
